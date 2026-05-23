@@ -1,65 +1,128 @@
+import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
+import { type Character, fetchAllCharacters } from "@/lib/api";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "Rick & Morty Explorer | Home",
+  description:
+    "Browse every character across infinite dimensions. Explore the complete Rick and Morty multiverse with detailed profiles, stats, and more.",
+};
+
+export const revalidate = 864000;
+
+export default async function Home() {
+  let characters: Character[] = [];
+
+  try {
+    characters = await fetchAllCharacters();
+  } catch (error) {
+    console.error("Failed to fetch characters:", error);
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+      {/* ── Hero Section ── */}
+      <section className="mx-auto max-w-4xl text-center mb-16">
+        <h1
+          className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight mb-4"
+          style={{
+            background: "linear-gradient(135deg, var(--accent), var(--accent2))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+          }}
+        >
+          Explore the Multiverse
+        </h1>
+
+        <p className="text-xl sm:text-2xl text-white/60 font-medium mb-3">
+          {characters.length} characters across infinite dimensions
+        </p>
+
+        <p className="text-base text-white/40 max-w-2xl mx-auto leading-relaxed">
+          Dive into the complete Rick&nbsp;&amp;&nbsp;Morty character database.
+          Every species, every status, every dimension — all in one place.
+        </p>
+      </section>
+
+      {/* ── Error State ── */}
+      {characters.length === 0 && (
+        <section className="flex flex-col items-center justify-center py-24 text-center">
+          <span className="mb-4 text-6xl">🌀</span>
+          <h3 className="mb-2 text-2xl font-semibold text-white">
+            Could not reach the multiverse
+          </h3>
+          <p className="text-slate-400">
+            The Rick &amp; Morty API is unreachable. Check your connection and try again.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+        </section>
+      )}
+
+      {/* ── Character Grid ── */}
+      {characters.length > 0 && (
+        <section className="mx-auto max-w-screen-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {characters.map((char, index) => (
+              <Link
+                key={char.id}
+                href={`/character/${char.id}`}
+                className="glass card-hover fade-in-up flex flex-col items-center p-4 transition-all duration-300"
+                style={{ animationDelay: `${index * 0.03}s` }}
+              >
+                <div className="w-full overflow-hidden rounded-xl mb-4">
+                  <Image
+                    src={char.image}
+                    alt={char.name}
+                    width={300}
+                    height={300}
+                    loading="lazy"
+                    unoptimized
+                    className="w-full h-auto object-cover"
+                  />
+                </div>
+
+                <h2 className="text-lg font-semibold text-center mb-2 truncate w-full">
+                  {char.name}
+                </h2>
+
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="pulse-dot"
+                    style={{
+                      backgroundColor:
+                        char.status === "Alive"
+                          ? "var(--glow-green)"
+                          : char.status === "Dead"
+                          ? "var(--glow-red)"
+                          : "var(--glow-gray)",
+                    }}
+                  />
+                  <span
+                    className={
+                      char.status === "Alive"
+                        ? "status-alive text-sm"
+                        : char.status === "Dead"
+                        ? "status-dead text-sm"
+                        : "status-unknown text-sm"
+                    }
+                  >
+                    {char.status}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-2 mt-auto">
+                  <span className="rounded-full bg-white/5 border border-white/10 px-3 py-0.5 text-xs text-white/70">
+                    {char.species}
+                  </span>
+                  <span className="rounded-full bg-white/5 border border-white/10 px-3 py-0.5 text-xs text-white/70">
+                    {char.gender}
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </main>
   );
 }

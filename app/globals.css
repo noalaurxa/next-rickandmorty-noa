@@ -1,26 +1,646 @@
 @import "tailwindcss";
 
+/* ═══════════════════════════════════════════════════════════════
+   Rick & Morty Explorer – Premium Space / Portal Theme
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Design Tokens ── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Portal greens */
+  --portal-green: #00ff88;
+  --portal-green-bright: #39ff14;
+  --portal-green-dim: #00cc6a;
+
+  /* Space purples */
+  --space-purple: #7c3aed;
+  --space-purple-deep: #6d28d9;
+  --space-purple-light: #a78bfa;
+
+  /* Backgrounds */
+  --bg-deep: #050a15;
+  --bg-surface: rgba(10, 18, 35, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-glow: rgba(0, 255, 136, 0.15);
+
+  /* Status colours */
+  --status-alive: #00ff88;
+  --status-dead: #ff3d5a;
+  --status-unknown: #8b95a5;
+
+  /* Text */
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+
+  /* Misc */
+  --glow-cyan: #00e5ff;
+  --accent-gold: #fbbf24;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* ── Base Reset ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ── Animated Gradient Orbs (background atmosphere) ── */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: -1;
+  will-change: transform;
+}
+
+body::before {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--portal-green) 0%, transparent 70%);
+  top: -10%;
+  left: -10%;
+  animation: orbFloat1 18s ease-in-out infinite alternate;
+}
+
+body::after {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--space-purple) 0%, transparent 70%);
+  bottom: -10%;
+  right: -10%;
+  animation: orbFloat2 22s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat1 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(15vw, 10vh) scale(1.15);
+  }
+  100% {
+    transform: translate(5vw, 25vh) scale(0.9);
+  }
+}
+
+@keyframes orbFloat2 {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-12vw, -15vh) scale(1.2);
+  }
+  100% {
+    transform: translate(-5vw, -8vh) scale(0.95);
+  }
+}
+
+/* ── Floating Stars / Particles Background ── */
+.stars-container {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: white;
+  border-radius: 50%;
+  animation: twinkle var(--dur, 3s) ease-in-out infinite alternate;
+  opacity: 0;
+}
+
+.star::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  background: inherit;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+@keyframes twinkle {
+  0% {
+    opacity: 0.1;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0.9;
+    transform: scale(1.2);
+  }
+}
+
+/* Procedural stars via shadows — no JS needed */
+.stars-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.stars-layer::before,
+.stars-layer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
+
+.stars-layer::before {
+  box-shadow:
+    120px 45px 0 0 rgba(255, 255, 255, 0.5),
+    350px 120px 0 0 rgba(255, 255, 255, 0.3),
+    580px 85px 0 0 rgba(255, 255, 255, 0.4),
+    800px 200px 0 0 rgba(255, 255, 255, 0.6),
+    1050px 60px 0 0 rgba(255, 255, 255, 0.3),
+    200px 310px 0 0 rgba(255, 255, 255, 0.5),
+    450px 380px 0 0 rgba(255, 255, 255, 0.2),
+    700px 340px 0 0 rgba(255, 255, 255, 0.4),
+    950px 420px 0 0 rgba(255, 255, 255, 0.3),
+    1200px 280px 0 0 rgba(255, 255, 255, 0.5),
+    80px 520px 0 0 rgba(255, 255, 255, 0.3),
+    320px 580px 0 0 rgba(255, 255, 255, 0.6),
+    560px 610px 0 0 rgba(255, 255, 255, 0.2),
+    850px 550px 0 0 rgba(255, 255, 255, 0.5),
+    1100px 640px 0 0 rgba(255, 255, 255, 0.3),
+    150px 730px 0 0 rgba(255, 255, 255, 0.4),
+    400px 780px 0 0 rgba(255, 255, 255, 0.5),
+    650px 700px 0 0 rgba(255, 255, 255, 0.3),
+    900px 760px 0 0 rgba(255, 255, 255, 0.6),
+    1180px 810px 0 0 rgba(255, 255, 255, 0.2),
+    60px 880px 0 0 rgba(255, 255, 255, 0.5),
+    280px 920px 0 0 rgba(255, 255, 255, 0.3),
+    540px 870px 0 0 rgba(255, 255, 255, 0.4),
+    780px 950px 0 0 rgba(255, 255, 255, 0.5),
+    1020px 890px 0 0 rgba(255, 255, 255, 0.3);
+  animation: starsFloat 60s linear infinite;
+}
+
+.stars-layer::after {
+  box-shadow:
+    70px 160px 0 0 rgba(0, 255, 136, 0.15),
+    420px 240px 0 0 rgba(124, 58, 237, 0.12),
+    750px 180px 0 0 rgba(0, 255, 136, 0.1),
+    1000px 350px 0 0 rgba(124, 58, 237, 0.15),
+    300px 500px 0 0 rgba(0, 255, 136, 0.12),
+    600px 450px 0 0 rgba(124, 58, 237, 0.1),
+    900px 600px 0 0 rgba(0, 255, 136, 0.15),
+    180px 680px 0 0 rgba(124, 58, 237, 0.12),
+    500px 750px 0 0 rgba(0, 255, 136, 0.1),
+    820px 820px 0 0 rgba(124, 58, 237, 0.15);
+  animation: starsFloat 90s linear infinite reverse;
+}
+
+@keyframes starsFloat {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   Utility Classes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Glassmorphism ── */
+.glass {
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+}
+
+.glass-sm {
+  background: rgba(10, 18, 35, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+}
+
+/* ── Card Hover with Portal Glow ── */
+.card-hover {
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s ease;
+  will-change: transform;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow:
+    0 0 20px rgba(0, 255, 136, 0.15),
+    0 0 60px rgba(0, 255, 136, 0.05),
+    0 20px 40px rgba(0, 0, 0, 0.3);
+  border-color: rgba(0, 255, 136, 0.3);
+}
+
+.card-hover:active {
+  transform: translateY(-2px) scale(1.01);
+}
+
+/* ── Portal Gradient Text ── */
+.portal-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--portal-green) 0%,
+    var(--portal-green-bright) 30%,
+    var(--glow-cyan) 60%,
+    var(--space-purple-light) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* ── Neon Border ── */
+.neon-border {
+  position: relative;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.neon-border::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--portal-green),
+    transparent 40%,
+    transparent 60%,
+    var(--space-purple)
+  );
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  opacity: 0.5;
+  animation: neonRotate 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes neonRotate {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
+
+/* ── Status Dot Animations ── */
+.pulse-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  animation: pulseDot 2s ease-in-out infinite;
+  box-shadow: 0 0 6px currentColor;
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 6px currentColor;
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.5);
+    box-shadow: 0 0 12px currentColor;
+  }
+}
+
+.status-alive {
+  color: var(--status-alive);
+}
+
+.status-dead {
+  color: var(--status-dead);
+}
+
+.status-unknown {
+  color: var(--status-unknown);
+}
+
+/* ── Fade In Up (staggered entrance) ── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger children */
+.fade-in-up:nth-child(1) { animation-delay: 0ms; }
+.fade-in-up:nth-child(2) { animation-delay: 60ms; }
+.fade-in-up:nth-child(3) { animation-delay: 120ms; }
+.fade-in-up:nth-child(4) { animation-delay: 180ms; }
+.fade-in-up:nth-child(5) { animation-delay: 240ms; }
+.fade-in-up:nth-child(6) { animation-delay: 300ms; }
+.fade-in-up:nth-child(7) { animation-delay: 360ms; }
+.fade-in-up:nth-child(8) { animation-delay: 420ms; }
+.fade-in-up:nth-child(9) { animation-delay: 480ms; }
+.fade-in-up:nth-child(10) { animation-delay: 540ms; }
+.fade-in-up:nth-child(11) { animation-delay: 600ms; }
+.fade-in-up:nth-child(12) { animation-delay: 660ms; }
+.fade-in-up:nth-child(n + 13) { animation-delay: 700ms; }
+
+/* ── Skeleton Shimmer Loader ── */
+@keyframes shimmer {
+  0% {
+    background-position: -600px 0;
+  }
+  100% {
+    background-position: 600px 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 0%,
+    rgba(255, 255, 255, 0.08) 40%,
+    rgba(255, 255, 255, 0.03) 80%
+  );
+  background-size: 1200px 100%;
+  animation: shimmer 1.8s infinite linear;
+  border-radius: 8px;
+}
+
+/* ── Search Input with Glowing Focus ── */
+.search-input {
+  width: 100%;
+  padding: 14px 20px 14px 48px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  color: var(--text-primary);
+  font-size: 1rem;
+  outline: none;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+}
+
+.search-input::placeholder {
+  color: var(--text-muted);
+}
+
+.search-input:focus {
+  border-color: var(--portal-green);
+  background: rgba(0, 255, 136, 0.03);
+  box-shadow:
+    0 0 0 3px rgba(0, 255, 136, 0.1),
+    0 0 20px rgba(0, 255, 136, 0.08);
+}
+
+/* ── Badge Pills ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+  transition: all 0.25s ease;
+}
+
+.badge-species {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--portal-green);
+  border-color: rgba(0, 255, 136, 0.2);
+}
+
+.badge-gender {
+  background: rgba(124, 58, 237, 0.1);
+  color: var(--space-purple-light);
+  border-color: rgba(124, 58, 237, 0.2);
+}
+
+.badge-status {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.badge-status.alive {
+  background: rgba(0, 255, 136, 0.1);
+  color: var(--status-alive);
+  border-color: rgba(0, 255, 136, 0.25);
+}
+
+.badge-status.dead {
+  background: rgba(255, 61, 90, 0.1);
+  color: var(--status-dead);
+  border-color: rgba(255, 61, 90, 0.25);
+}
+
+.badge-status.unknown {
+  background: rgba(139, 149, 165, 0.1);
+  color: var(--status-unknown);
+  border-color: rgba(139, 149, 165, 0.2);
+}
+
+.badge-location {
+  background: rgba(0, 229, 255, 0.08);
+  color: var(--glow-cyan);
+  border-color: rgba(0, 229, 255, 0.15);
+}
+
+/* ── Neon Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(5, 10, 21, 0.8);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--portal-green-dim) 0%,
+    var(--space-purple) 100%
+  );
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--portal-green) 0%,
+    var(--space-purple-light) 100%
+  );
+  background-clip: padding-box;
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--portal-green-dim) rgba(5, 10, 21, 0.8);
+}
+
+/* ── Decorative Portal Circle (used in layout background) ── */
+.portal-ring {
+  position: fixed;
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 255, 136, 0.08);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: -1;
+  animation: portalSpin 30s linear infinite;
+}
+
+.portal-ring::before {
+  content: "";
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 1px solid rgba(124, 58, 237, 0.06);
+  animation: portalSpin 20s linear infinite reverse;
+}
+
+.portal-ring::after {
+  content: "";
+  position: absolute;
+  inset: 30px;
+  border-radius: 50%;
+  border: 1px dashed rgba(0, 255, 136, 0.05);
+  animation: portalSpin 25s linear infinite;
+}
+
+@keyframes portalSpin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* ── Smooth Global Transitions ── */
+a,
+button,
+input,
+select,
+textarea {
+  transition:
+    color 0.25s ease,
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+
+a:hover {
+  color: var(--portal-green);
+}
+
+/* ── Image hover zoom ── */
+img {
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ── Selection colour ── */
+::selection {
+  background: rgba(0, 255, 136, 0.25);
+  color: #fff;
+}
+
+::-moz-selection {
+  background: rgba(0, 255, 136, 0.25);
+  color: #fff;
+}
+
+/* ── Focus-visible for accessibility ── */
+:focus-visible {
+  outline: 2px solid var(--portal-green);
+  outline-offset: 2px;
+}
+
+/* ── Header bottom border glow ── */
+.header-glow {
+  box-shadow:
+    0 1px 0 0 var(--border-subtle),
+    0 4px 20px -4px rgba(0, 255, 136, 0.12);
+}
+
+/* ── Page transition utility ── */
+.page-enter {
+  animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
